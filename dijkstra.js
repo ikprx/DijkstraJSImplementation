@@ -1,11 +1,23 @@
+// klasa wierzcholek
+// d - odleglosc od s - source
+// pred - poprzednik w drodze do source
+function Vertex(d = Number.POSITIVE_INFINITY, pred=null)
+{
+    this.d = d;
+	this.pred = pred;
+}
+//funkcja potrzebna przy minheap do heapify
+// porownuje odleglosci miedzy dwoma wierzcholkami
+Vertex.prototype.compare = function(other)
+{
+    return this.d > other.d;
+}
+
 // TUTAJ IMPLEMENTUJE MIN-HEAP
 // NIE JEST TO KONIECZNE DO ZROZUMIENIA DIJKSTRA!
 // JEDYNE CO MUSISZ WIEDZIEĆ O TYM, TO TO, ŻE JEST TO STRUKTURA DRZEWA, GDZIE NA SAMEJ GÓRZE JEST NAJMNIEJSZY ELEMENT
 // https://youtu.be/t0Cq6tVNRBA - dobry tutorial!
 // jako item przyjmuje tablie 3 elementową
-//  u : [0]
-//  v : [1]
-//  w: [2]
 function MinHeap(){
     // elementy naszego heapa
     this.items = new Array();
@@ -72,7 +84,7 @@ MinHeap.prototype.peek = function()
 {
     if(this.items.length != 0)
     {
-        return this.items[0][2];
+        return this.items[0];
     }
     else
     {
@@ -83,7 +95,7 @@ MinHeap.prototype.peek = function()
 MinHeap.prototype.heapifyUp = function()
 {
     var index = this.items.length -1;
-    while(this.hasParent(index) && this.parent(index)[2] > this.items[index][2])
+    while(this.hasParent(index) && this.parent(index).compare(this.items[index]))
     {
         this.swap(this.getParentIndex(index),index);
         index = this.getParentIndex(index);
@@ -96,11 +108,11 @@ MinHeap.prototype.heapifyDown = function()
     while(this.hasLeftChild(index))
     {
         var smallerChildIndex = this.getLeftChildIndex(index);
-        if(this.hasRightChild(index) && this.rightChild(index)[2] < this.leftChild(index)[2])
+        if(this.hasRightChild(index) && !this.rightChild(index).compare(this.leftChild(index)))
         {
             smallerChildIndex = this.getRightChildIndex(index);
         }
-        if(this.items[index].w < items[smallerChildIndex][2])
+        if(!this.items[index].compare(items[smallerChildIndex]))
         {
             break;   
         }
@@ -135,17 +147,14 @@ MinHeap.prototype.add = function(item)
     this.heapifyUp();
 };
 
-// Graph - graf
-// tablica z krawdziami, ktore sa tablica
-// [u,v,w] , u - poczatek, v - koniec, w - waga
-// Source - początek
-function Dijkstra(Graph,source)
-{
-    // wierzcholki obliczone
-    
-}
 
 window.onload = function()
 {
-
+    var h = new MinHeap();
+    h.add(new Vertex(30,20));
+    h.add(new Vertex(50,20));
+    h.add(new Vertex(10,20));
+    h.add(new Vertex(80,20));
+    h.add(new Vertex(60,20));
+    console.log(h.peek());
 };
