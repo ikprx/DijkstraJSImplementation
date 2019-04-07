@@ -1,9 +1,13 @@
-// TUTAJ IMPLEMENTUJE MIN-HEAP
-// NIE JEST TO KONIECZNE DO ZROZUMIENIA DIJKSTRA!
 function MinHeap(){
     // elementy naszego heapa
     this.items = new Array();
 }
+
+MinHeap.prototype.getD = function(item)
+{
+    return (Array.from(item.values())[0].get("d"));
+}
+
 //lewa galaz od rodzica
 MinHeap.prototype.getLeftChildIndex = function(parentIndex)
 {
@@ -22,28 +26,32 @@ MinHeap.prototype.getParentIndex = function(childIndex)
 // ma lewa galaz ?
 MinHeap.prototype.hasLeftChild = function(index)
 {
-    return getLeftChildIndex(index) < this.items.length;
+    return this.getLeftChildIndex(index) < this.items.length;
 };
 // ma prawa galaz ?
 MinHeap.prototype.hasLeftChild = function(index)
 {
-    return getRightChildIndex(index) < this.items.length;
+    return this.getRightChildIndex(index) < this.items.length;
 };
+
 //ma rodzica ? 
 MinHeap.prototype.hasParent = function(index)
 {
     return this.getParentIndex(index) >= 0;
 };
+
 //zwroc lewa galaz - wartosc nie indeksach!
 MinHeap.prototype.leftChild = function(index)
 {
     return this.items[this.getLeftChildIndex(index)];
 };
+
 //zwroc prawa galaz - wartosc nie indeksach!
 MinHeap.prototype.rightChild = function(index)
 {
     return this.items[this.getRightChildIndex(index)];
 };
+
 //zwroc rodzica - wartosc nie indeksach!
 MinHeap.prototype.parent = function(index)
 {
@@ -72,7 +80,8 @@ MinHeap.prototype.peek = function()
 MinHeap.prototype.heapifyUp = function()
 {
     var index = this.items.length -1;
-    while(this.hasParent(index) && this.parent(index) > this.items[index])
+    //while(this.hasParent(index) && this.parent(index).compare(this.items[index]))
+    while(this.hasParent(index) && this.getD(this.parent(index)) > this.getD(this.items[index]))
     {
         this.swap(this.getParentIndex(index),index);
         index = this.getParentIndex(index);
@@ -85,11 +94,11 @@ MinHeap.prototype.heapifyDown = function()
     while(this.hasLeftChild(index))
     {
         var smallerChildIndex = this.getLeftChildIndex(index);
-        if(this.hasRightChild(index) && this.rightChild(index) > this.leftChild(index))
+        if(this.hasRightChild(index) && this.getD(this.rightChild(index)) < this.getD(this.leftChild(index)))
         {
             smallerChildIndex = this.getRightChildIndex(index);
         }
-        if(this.items[index] < items[smallerChildIndex])
+        if(this.getD(this.items[index]) < this.getD((items[smallerChildIndex])))
         {
             break;   
         }
@@ -99,6 +108,7 @@ MinHeap.prototype.heapifyDown = function()
         index = smallerChildIndex;
     }
 };
+
 // zwroc element, nie tylko wartosc 
 MinHeap.prototype.poll = function()
 {
@@ -108,7 +118,7 @@ MinHeap.prototype.poll = function()
         var tmp = this.items[0];
         this.items[0] = this.items[this.items.length-1]; 
         this.items.pop();
-        heapifyDown();
+        this.heapifyDown();
         return tmp;
     }
     else
@@ -122,6 +132,19 @@ MinHeap.prototype.add = function(item)
     this.items.push(item);
     this.heapifyUp();
 };
+
+
+MinHeap.prototype.insertMap = function(m)
+{
+    var arr = Array.from(m);
+    for(var i = 0;i<arr.length;i++)
+    {
+        var nmap = new Map();
+        nmap.set(arr[i][0],arr[i][1]);
+        this.add(nmap);
+    }
+}
+
 //Obiekt krawedz
 // u - poczatek
 // v- koniec
@@ -184,24 +207,32 @@ Graph.prototype.processEdge = function(e)
 
 function dijkstra(graph, source)
 {
-
+    //initalize single source
+    //czesc zrobiona przez funkcje process Edge
+    console.log("hello!");
+    graph.vertices.get(source).set("d", 0);
+    //krawedzie zaliczone
+    var S = new Map();
+    //krawedzi do zaliczenia
+    var Q = new MinHeap();
+    Q.insertMap(graph.vertices);
+    while(Q.items.length != 0)
+    {
+        var u = Q.poll();
+        console.log(u); 
+    }
 }
 
 window.onload = function()
 {
-    var h = new MinHeap();
-    h.add(45);
-    h.add(50);
-    h.add(40);
-    h.add(10);
-    h.add(2313210);
-
+ 
 
     var graph = new Graph();
     graph.processEdge(new Edge("x","t",10));
     graph.processEdge(new Edge("x","y",5));
-    console.log(graph.adj);
-    console.log(graph.wages);
-    console.log(graph.vertices);
-    console.log(h.peek());
+    //console.log(graph.adj);
+    //console.log(graph.wages);
+    //console.log(graph.vertices);
+
+    dijkstra(graph,"x");
 };
