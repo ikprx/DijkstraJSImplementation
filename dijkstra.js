@@ -29,7 +29,7 @@ MinHeap.prototype.hasLeftChild = function(index)
     return this.getLeftChildIndex(index) < this.items.length;
 };
 // ma prawa galaz ?
-MinHeap.prototype.hasLeftChild = function(index)
+MinHeap.prototype.hasRightChild = function(index)
 {
     return this.getRightChildIndex(index) < this.items.length;
 };
@@ -98,12 +98,12 @@ MinHeap.prototype.heapifyDown = function()
         {
             smallerChildIndex = this.getRightChildIndex(index);
         }
-        if(this.getD(this.items[index]) < this.getD((items[smallerChildIndex])))
+        if(this.getD(this.items[index]) < this.getD((this.items[smallerChildIndex])))
         {
             break;   
         }
         else{
-            swap(index,smallerChildIndex);
+            this.swap(index,smallerChildIndex);
         }
         index = smallerChildIndex;
     }
@@ -197,42 +197,64 @@ Graph.prototype.processEdge = function(e)
         this.vertices.set(e.u, new Map());
         this.vertices.get(e.u).set("d",Infinity);
         this.vertices.get(e.u).set("pred",null);
+        this.vertices.get(e.u).set("id",e.u);
     }
     if(!this.vertices.has(e.v)){
         this.vertices.set(e.v, new Map());
         this.vertices.get(e.v).set("d",Infinity);
         this.vertices.get(e.v).set("pred",null);
+        this.vertices.get(e.v).set("id",e.v);
     }
 }
 
+function getId(rec)
+{
+    return Array.from(rec)[0][0];
+}
+
+function relax(u,v,w)
+{
+    if(v.get("d") > (u.get("d") + w))
+    {
+        v.set("d", u.get("d") + w);
+        v.set("pred",u.get("id"));
+    }
+}
 function dijkstra(graph, source)
 {
     //initalize single source
     //czesc zrobiona przez funkcje process Edge
-    console.log("hello!");
     graph.vertices.get(source).set("d", 0);
     //krawedzie zaliczone
-    var S = new Map();
+    var S = new Array();
     //krawedzi do zaliczenia
     var Q = new MinHeap();
     Q.insertMap(graph.vertices);
     while(Q.items.length != 0)
     {
         var u = Q.poll();
-        console.log(u); 
+        S.push(u);
+        var neighbours= graph.adj.get(getId(u));
+        for(var neighbour of neighbours)
+        {
+            relax(graph.vertices.get(getId(u)),graph.vertices.get(getId(neighbour)),graph.wages.get(getId(u)).get(getId(neighbour)));
+        }
     }
+    console.log(S);
 }
 
 window.onload = function()
 {
- 
-
     var graph = new Graph();
-    graph.processEdge(new Edge("x","t",10));
-    graph.processEdge(new Edge("x","y",5));
-    //console.log(graph.adj);
-    //console.log(graph.wages);
-    //console.log(graph.vertices);
+    graph.processEdge(new Edge("s","a",10));
+    graph.processEdge(new Edge("a","h",23));
+    graph.processEdge(new Edge("h","f",11));
+    graph.processEdge(new Edge("f","d",30));
+    graph.processEdge(new Edge("d","c",20));
+    graph.processEdge(new Edge("c","b",4));
+    graph.processEdge(new Edge("b","s",5));
+    console.log(graph.adj);
+    console.log(graph.wages);
+    dijkstra(graph,"s");
 
-    dijkstra(graph,"x");
 };
