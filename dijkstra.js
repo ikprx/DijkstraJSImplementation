@@ -185,7 +185,6 @@ Graph.prototype.processEdge = function(e)
     }
 
     this.adj.get(e.u).push(e.v);
-    this.adj.get(e.v).push(e.u);
 
     if(!this.wages.has(e.u))
     {
@@ -237,24 +236,27 @@ function dijkstra(graph, source)
         var neighbours= graph.adj.get(getId(u));
         for(var neighbour of neighbours)
         {
-            relax(graph.vertices.get(getId(u)),graph.vertices.get(getId(neighbour)),graph.wages.get(getId(u)).get(getId(neighbour)));
+            if((graph.adj.get(getId(u))).includes(neighbour))
+            {
+                relax(graph.vertices.get(getId(u)),graph.vertices.get(getId(neighbour)),graph.wages.get(getId(u)).get(neighbour));
+            }
         }
     }
-    console.log(S);
 }
 
 window.onload = function()
 {
     var graph = new Graph();
     graph.processEdge(new Edge("s","a",10));
-    graph.processEdge(new Edge("a","h",23));
-    graph.processEdge(new Edge("h","f",11));
-    graph.processEdge(new Edge("f","d",30));
-    graph.processEdge(new Edge("d","c",20));
-    graph.processEdge(new Edge("c","b",4));
-    graph.processEdge(new Edge("b","s",5));
-    console.log(graph.adj);
-    console.log(graph.wages);
+    graph.processEdge(new Edge("s","b",20));
+    graph.processEdge(new Edge("b","c",45));
+    graph.processEdge(new Edge("c","d",3));
+    graph.processEdge(new Edge("d","e",1));
+    graph.processEdge(new Edge("s","j",2));
+    graph.processEdge(new Edge("j","z",10));
+    graph.processEdge(new Edge("g","f",13));
+    graph.processEdge(new Edge("f","s",11));
     dijkstra(graph,"s");
+    console.log(graph.vertices);
 
 };
