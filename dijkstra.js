@@ -1,70 +1,52 @@
 function MinHeap(){
-    // elementy naszego heapa
     this.items = new Array();
 }
-
 MinHeap.prototype.getD = function(item)
 {
     return (Array.from(item.values())[0].get("d"));
 }
-
-//lewa galaz od rodzica
 MinHeap.prototype.getLeftChildIndex = function(parentIndex)
 {
         return (2*parentIndex) + 1;
 };
-//prawa galaz od rodzica
 MinHeap.prototype.getRightChildIndex = function(parentIndex)
 {
     return (2*parentIndex) + 2;
 };
-// zwroc rodzica
 MinHeap.prototype.getParentIndex = function(childIndex)
 {
     return Math.ceil((childIndex-1) / 2);
 };
-// ma lewa galaz ?
 MinHeap.prototype.hasLeftChild = function(index)
 {
     return this.getLeftChildIndex(index) < this.items.length;
 };
-// ma prawa galaz ?
 MinHeap.prototype.hasRightChild = function(index)
 {
     return this.getRightChildIndex(index) < this.items.length;
 };
-
-//ma rodzica ? 
 MinHeap.prototype.hasParent = function(index)
 {
     return this.getParentIndex(index) >= 0;
 };
-
-//zwroc lewa galaz - wartosc nie indeksach!
 MinHeap.prototype.leftChild = function(index)
 {
     return this.items[this.getLeftChildIndex(index)];
 };
-
-//zwroc prawa galaz - wartosc nie indeksach!
 MinHeap.prototype.rightChild = function(index)
 {
     return this.items[this.getRightChildIndex(index)];
 };
-
-//zwroc rodzica - wartosc nie indeksach!
 MinHeap.prototype.parent = function(index)
 {
     return this.items[this.getParentIndex(index)];
 };
-// zamien dwa elementy w poszczegolnych indeksach
 MinHeap.prototype.swap = function(indexOne, indexTwo)
 {
     var tmp = this.items[indexOne];
     this.items[indexOne] = this.items[indexTwo];
     this.items[indexTwo] = tmp;
 };
-//zwroc wartosc pierwszego elementu
 MinHeap.prototype.peek = function()
 {
     if(this.items.length != 0)
@@ -76,18 +58,15 @@ MinHeap.prototype.peek = function()
         console.log("MinHeap:items: JEST PUSTY!")
     }
 };
-//popraw kolejnosc w heapie
 MinHeap.prototype.heapifyUp = function()
 {
     var index = this.items.length -1;
-    //while(this.hasParent(index) && this.parent(index).compare(this.items[index]))
     while(this.hasParent(index) && this.getD(this.parent(index)) > this.getD(this.items[index]))
     {
         this.swap(this.getParentIndex(index),index);
         index = this.getParentIndex(index);
     }
 };
-//popraw kolejnosc w heapie
 MinHeap.prototype.heapifyDown = function()
 {
     var index = 0;
@@ -108,8 +87,6 @@ MinHeap.prototype.heapifyDown = function()
         index = smallerChildIndex;
     }
 };
-
-// zwroc element, nie tylko wartosc 
 MinHeap.prototype.poll = function()
 {
 
@@ -126,14 +103,11 @@ MinHeap.prototype.poll = function()
         console.log("MinHeap:items: JEST PUSTY!")
     }
 };
-// dodaj element
 MinHeap.prototype.add = function(item)
 {
     this.items.push(item);
     this.heapifyUp();
 };
-
-
 MinHeap.prototype.insertMap = function(m)
 {
     var arr = Array.from(m);
@@ -145,8 +119,8 @@ MinHeap.prototype.insertMap = function(m)
     }
 }
 
-//Obiekt krawedz
-// u - poczatek
+//Obiekt krawedź
+// u - początek
 // v- koniec
 // w - koszt
 function Edge(u,v,w)
@@ -155,49 +129,61 @@ function Edge(u,v,w)
     this.v = v;
     this.w = w;
 }
-
+//Obiekt Graph
 function Graph()
 {
     //uzywamy slownikow to reprezentacji grafu
-    //wierzcholki
-    // wszystkie wierzcholki
-    // kazdy wierzchoek opsiany przez strukture
+
+
+    // wszystkie wierzchołki grafu
+    // każdy opsiany za pomocą struktury
     // d - koszt od s(source)
     // pred - poprzednik w kierunku punktu s
     this.vertices = new Map();
-    //tablica sasiedztwa
-    // adj[u] = sasiedzi krawedzi u
+
+    //tablica sąsiedztwa 
+    // adj[u] = sąsiedzi krawędzi u
     this.adj = new Map(); 
-    //kosztu poszczegolnych krawedzi
+
+    //koszt poszczególnych krawędzi
+    //początek u 
+    //początek v 
     // wages[u][v] = koszt
     this.wages = new Map();
 }
 
 Graph.prototype.processEdge = function(e)
 {
+    //jeżeli nie ma jeszcze w słowniku adj wierzchołka u, dodaj go!
     if(!this.adj.has(e.u))
     {
         this.adj.set(e.u,[]);
     }
+    //jeżeli nie ma jeszcze w słowniku adj wierzchołka v, dodaj go!
     if(!this.adj.has(e.v))
     {
         this.adj.set(e.v,[]);
     }
-
+    
+    //dodaj sąsiedztwo wierzchołka u, czyli dodaj wierzchołek v
     this.adj.get(e.u).push(e.v);
 
+    //jeżeli nie ma wag krawędzi wychodzących z u to daj je
     if(!this.wages.has(e.u))
     {
         this.wages.set(e.u,new Map());
     }
+    //dodaj wage w dla krawędzi (u,v) 
     this.wages.get(e.u).set(e.v, e.w);
 
+    //jeżeli nie ma  u dodaj ją i nadaj domyślne wartośći
     if(!this.vertices.has(e.u)){
         this.vertices.set(e.u, new Map());
         this.vertices.get(e.u).set("d",Infinity);
         this.vertices.get(e.u).set("pred",null);
         this.vertices.get(e.u).set("id",e.u);
     }
+    //jeżeli nie ma  v dodaj ją i nadaj domyślne wartośći
     if(!this.vertices.has(e.v)){
         this.vertices.set(e.v, new Map());
         this.vertices.get(e.v).set("d",Infinity);
@@ -208,11 +194,15 @@ Graph.prototype.processEdge = function(e)
 
 function getId(rec)
 {
+    //DOBRY KOD TEGO BY NIE POTRZEBOWAŁ :((((((((((((((
+    //SPAGHETTI CODE !
     return Array.from(rec)[0][0];
 }
 
 function relax(u,v,w)
 {
+    //Jeżeli koszt dotarcia do wierzchołka d jest droższy niż dotarcie za pomocą krawędzi (u,v)
+    // dodkonaj akutalizacji
     if(v.get("d") > (u.get("d") + w))
     {
         v.set("d", u.get("d") + w);
@@ -222,31 +212,44 @@ function relax(u,v,w)
 function dijkstra(graph, source)
 {
     //initalize single source
-    //czesc zrobiona przez funkcje process Edge
+    //część zrobiona w funkcji processedge
+    //ustawiamy nasz startowy wierzcholek na 0 aby priority queue zaczął od niego
+    //reszta wierzchołków ma mieć koszt ustawiony na inf, a pred na null.
     graph.vertices.get(source).set("d", 0);
-    //krawedzie zaliczone
-    var S = new Array();
-    //krawedzi do zaliczenia
+
+    //priority queue(zaimplementowany za pomocą kopca minimalnego)
     var Q = new MinHeap();
+    //Wstaw wczytane wierzchołki do struktury minheap
     Q.insertMap(graph.vertices);
+    //Dopóki nie sprawdze wszystkich wierzchołków, iteruj!
     while(Q.items.length != 0)
     {
+        //wyciągni wierzchołek z najmniejszym kosztem i usuń z kopca!
         var u = Q.poll();
-        S.push(u);
+        
+        //za pomocą słownika adj zdobądź tablice id sąsiadów 
         var neighbours= graph.adj.get(getId(u));
+        
+        //wykonuj ciało pętli dla każdego sąsiada!
         for(var neighbour of neighbours)
         {
+            //sprawdź czy istnieje połączenie między sąsiadami, ponieważ rozpatrujemy graf skierowany!
+            // (u,v) != (v,u)
             if((graph.adj.get(getId(u))).includes(neighbour))
             {
+                //sprawdzmy czy mozemy za pomocą krawędzi (u,v) zmieniszyć koszt dotarcia do wierzchołka v
                 relax(graph.vertices.get(getId(u)),graph.vertices.get(getId(neighbour)),graph.wages.get(getId(u)).get(neighbour));
             }
         }
     }
 }
-
+//js uruchomi sie dopiero po zaladowaniu strony
 window.onload = function()
 {
+    //utworz nowy obiekt grafu
     var graph = new Graph();
+
+    //dodaj krawedzie grafu!
     graph.processEdge(new Edge("s","a",10));
     graph.processEdge(new Edge("s","b",20));
     graph.processEdge(new Edge("b","c",45));
@@ -256,7 +259,11 @@ window.onload = function()
     graph.processEdge(new Edge("j","z",10));
     graph.processEdge(new Edge("g","f",13));
     graph.processEdge(new Edge("f","s",11));
+
+    //uruchom algorytm dijkstra!
     dijkstra(graph,"s");
+
+    //wypisz struktury wszystkich  wierzcholkow
     console.log(graph.vertices);
 
 };
