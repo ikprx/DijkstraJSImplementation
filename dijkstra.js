@@ -154,6 +154,9 @@ function Graph()
     //priority queue(zaimplementowany za pomocą kopca minimalnego)
     this.Q = new MinHeap();
 
+    // end of the line
+    this.end = "";
+
 }
 
 Graph.prototype.processEdge = function(e)
@@ -207,15 +210,13 @@ function relax(u,v,w)
 {
     //Jeżeli koszt dotarcia do wierzchołka d jest droższy niż dotarcie za pomocą krawędzi (u,v)
     // dodkonaj akutalizacji
-    console.log(relaxFlag);
     if(v.get("d") > (u.get("d") + w))
     {
         v.set("d", u.get("d") + w);
         v.set("pred",u.get("id"));
     }
     else{
-        console.log(u);
-        console.log(v);
+        //flaga uzywana do wizualizacji i przekreslania krawedzi!
         relaxFlag = true;
     }
 }
@@ -268,9 +269,67 @@ function dijkstra(graph, source)
                 visualize(graph,getId(u));
             }
         }
+        updateVertsTable(graph);
         break;
     }
+
+    if(graph.Q.items.length == 0)
+    {
+        document.getElementById("way").disabled = false;
+        document.getElementById("way").addEventListener('click',function(){
+            var dest = document.getElementById("dest").value;
+            if(Array.from(graph.vertices.keys()).includes(dest))
+            {
+                var elements = ["a","b","c","d","e","f","h"];
+                for(var element of elements)
+                {
+                    document.getElementById(element).setAttribute("fill","white");
+                }
+                visualizeMove(graph,dest);
+            }
+        });
+    }
 }
+
+function updateVertsTable(graph)
+{
+
+    document.getElementById("verts").innerHTML = "";
+    var html = "";
+    html += "<tr>";
+    html += "<th>VERT</th>";
+    html += "<th>PRED</th>";
+    html += "<th>COST</th>";
+    html += "</tr>";
+    for(var verts of graph.vertices.values())
+    {
+        html += "<tr>";
+        html += ('<td id="id' + verts.get("id") +'">'+ verts.get("id") + "</td>");
+        html += ('<td id="pred' + verts.get("id") + '">' + verts.get("pred") + "</td>");
+        html += ("<td>" + verts.get("d") + "</td>");
+        html += "</tr>";
+    }
+    document.getElementById("verts").innerHTML += html;
+}
+
+function visualizeMove(graph, dest)
+{
+    for(var verts of graph.vertices.values())
+    {
+        document.getElementById("id" + verts.get("id")).style.backgroundColor = "white";
+        document.getElementById("pred" + verts.get("id")).style.backgroundColor = "white";
+
+    }
+    document.getElementById("id" + dest).style.backgroundColor = "red";
+    document.getElementById("pred" + dest).style.backgroundColor = "red";
+    document.getElementById(dest).setAttribute("fill","red");
+    if(graph.vertices.get(dest).get("pred") != null)
+    {
+        ndest = graph.vertices.get(dest).get("pred");
+        setTimeout(function(){visualizeMove(graph, ndest)},1000);
+    }
+}
+
 
 window.addEventListener('DOMContentLoaded', (event) => {
     //utworz nowy obiekt grafu
@@ -294,7 +353,9 @@ window.addEventListener('DOMContentLoaded', (event) => {
 
     //Wstaw wczytane wierzchołki do struktury minheap
     graph.Q.insertMap(graph.vertices);
+    graph.end = "a";
 
+    document.getElementById("way").disabled = true;
     document.getElementById("next").addEventListener('click',function(){
         dijkstra(graph,"a");
     });
