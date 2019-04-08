@@ -77,7 +77,7 @@ MinHeap.prototype.heapifyDown = function()
         {
             smallerChildIndex = this.getRightChildIndex(index);
         }
-        if(this.getD(this.items[index]) < this.getD((this.items[smallerChildIndex])))
+        if(this.getD(this.items[index]) <= this.getD((this.items[smallerChildIndex])))
         {
             break;   
         }
@@ -100,6 +100,7 @@ MinHeap.prototype.poll = function()
     }
     else
     {
+        
         console.log("MinHeap:items: JEST PUSTY!")
     }
 };
@@ -150,6 +151,9 @@ function Graph()
     //początek v 
     // wages[u][v] = koszt
     this.wages = new Map();
+    //priority queue(zaimplementowany za pomocą kopca minimalnego)
+    this.Q = new MinHeap();
+
 }
 
 Graph.prototype.processEdge = function(e)
@@ -198,38 +202,60 @@ function getId(rec)
     //SPAGHETTI CODE !
     return Array.from(rec)[0][0];
 }
-
+var relaxFlag = false;
 function relax(u,v,w)
 {
     //Jeżeli koszt dotarcia do wierzchołka d jest droższy niż dotarcie za pomocą krawędzi (u,v)
     // dodkonaj akutalizacji
+    console.log(relaxFlag);
     if(v.get("d") > (u.get("d") + w))
     {
         v.set("d", u.get("d") + w);
         v.set("pred",u.get("id"));
     }
+    else{
+        console.log(u);
+        console.log(v);
+        relaxFlag = true;
+    }
 }
+
+function visualize(graph, source)
+{
+    var neighbours = graph.adj.get(source);
+    for(var neighbour of neighbours)
+    {
+        if(relaxFlag)
+        {
+            document.getElementById(source+neighbour).innerHTML = "X"; 
+            relaxFlag = false;
+        }
+        else{
+            document.getElementById(source+neighbour).innerHTML = graph.vertices.get(neighbour).get("d");
+        }
+        if(document.getElementById(neighbour).getAttribute("fill") != "red" && document.getElementById(neighbour).getAttribute("fill" != "green"))
+        {
+            document.getElementById(neighbour).setAttribute("fill","red");
+        }
+
+    }
+}
+
 function dijkstra(graph, source)
 {
-    //initalize single source
-    //część zrobiona w funkcji processedge
-    //ustawiamy nasz startowy wierzcholek na 0 aby priority queue zaczął od niego
-    //reszta wierzchołków ma mieć koszt ustawiony na inf, a pred na null.
-    graph.vertices.get(source).set("d", 0);
-
-    //priority queue(zaimplementowany za pomocą kopca minimalnego)
-    var Q = new MinHeap();
-    //Wstaw wczytane wierzchołki do struktury minheap
-    Q.insertMap(graph.vertices);
     //Dopóki nie sprawdze wszystkich wierzchołków, iteruj!
-    while(Q.items.length != 0)
+    while(graph.Q.items.length != 0)
     {
         //wyciągni wierzchołek z najmniejszym kosztem i usuń z kopca!
-        var u = Q.poll();
-        
+        graph.Q.heapifyDown();
+        graph.Q.heapifyUp();
+        var u = graph.Q.poll();
+
+        document.getElementById(getId(u)).setAttribute("fill","green");
+
+
         //za pomocą słownika adj zdobądź tablice id sąsiadów 
         var neighbours= graph.adj.get(getId(u));
-        
         //wykonuj ciało pętli dla każdego sąsiada!
         for(var neighbour of neighbours)
         {
@@ -239,31 +265,37 @@ function dijkstra(graph, source)
             {
                 //sprawdzmy czy mozemy za pomocą krawędzi (u,v) zmieniszyć koszt dotarcia do wierzchołka v
                 relax(graph.vertices.get(getId(u)),graph.vertices.get(getId(neighbour)),graph.wages.get(getId(u)).get(neighbour));
+                visualize(graph,getId(u));
             }
         }
+        break;
     }
 }
-//js uruchomi sie dopiero po zaladowaniu strony
-window.onload = function()
-{
+
+window.addEventListener('DOMContentLoaded', (event) => {
     //utworz nowy obiekt grafu
     var graph = new Graph();
 
     //dodaj krawedzie grafu!
-    graph.processEdge(new Edge("s","a",10));
-    graph.processEdge(new Edge("s","b",20));
-    graph.processEdge(new Edge("b","c",45));
-    graph.processEdge(new Edge("c","d",3));
-    graph.processEdge(new Edge("d","e",1));
-    graph.processEdge(new Edge("s","j",2));
-    graph.processEdge(new Edge("j","z",10));
-    graph.processEdge(new Edge("g","f",13));
-    graph.processEdge(new Edge("f","s",11));
+    graph.processEdge(new Edge("a","b",10));
+    graph.processEdge(new Edge("a","c",6));
+    graph.processEdge(new Edge("b","d",15));
+    graph.processEdge(new Edge("c","d",4));
+    graph.processEdge(new Edge("d","e",20));
+    graph.processEdge(new Edge("e","h",1));
+    graph.processEdge(new Edge("d","f",3));
+    graph.processEdge(new Edge("f","h",4));
 
-    //uruchom algorytm dijkstra!
-    dijkstra(graph,"s");
+    //initalize single source
+    //część zrobiona w funkcji processedge
+    //ustawiamy nasz startowy wierzcholek na 0 aby priority queue zaczął od niego
+    //reszta wierzchołków ma mieć koszt ustawiony na inf, a pred na null.
+    graph.vertices.get("a").set("d", 0);
 
-    //wypisz struktury wszystkich  wierzcholkow
-    console.log(graph.vertices);
+    //Wstaw wczytane wierzchołki do struktury minheap
+    graph.Q.insertMap(graph.vertices);
 
-};
+    document.getElementById("next").addEventListener('click',function(){
+        dijkstra(graph,"a");
+    });
+});
