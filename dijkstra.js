@@ -251,10 +251,7 @@ function dijkstra(graph, source)
         graph.Q.heapifyDown();
         graph.Q.heapifyUp();
         var u = graph.Q.poll();
-
         document.getElementById(getId(u)).setAttribute("fill","green");
-
-
         //za pomocą słownika adj zdobądź tablice id sąsiadów 
         var neighbours= graph.adj.get(getId(u));
         //wykonuj ciało pętli dla każdego sąsiada!
@@ -277,16 +274,16 @@ function dijkstra(graph, source)
     {
         document.getElementById("way").disabled = false;
         document.getElementById("way").addEventListener('click',function(){
-            var dest = document.getElementById("dest").value;
-            if(Array.from(graph.vertices.keys()).includes(dest))
-            {
-                var elements = ["a","b","c","d","e","f","h"];
-                for(var element of elements)
+                var dest = document.getElementById("dest").value;
+                if(Array.from(graph.vertices.keys()).includes(dest))
                 {
-                    document.getElementById(element).setAttribute("fill","white");
+                    var elements = ["a","b","c","d","e","f","h"];
+                    for(var element of elements)
+                    {
+                        document.getElementById(element).setAttribute("fill","white");
+                    }
                 }
                 visualizeMove(graph,dest);
-            }
         });
     }
 }
@@ -311,23 +308,41 @@ function updateVertsTable(graph)
     }
     document.getElementById("verts").innerHTML += html;
 }
-
+function addInterval(id, time)
+{
+    setTimeout(function(){
+        $(id).css("fill","green");
+    },time);
+    setTimeout(function(){
+        $(id).css("fill","white");
+        console.log("#"+cdest);
+    },time+1000);
+}
 function visualizeMove(graph, dest)
 {
-    for(var verts of graph.vertices.values())
-    {
-        document.getElementById("id" + verts.get("id")).style.backgroundColor = "white";
-        document.getElementById("pred" + verts.get("id")).style.backgroundColor = "white";
-
+    var ndest = undefined;
+    var cdest = dest;
+    var i =0;
+    var html = "";
+    do{
+        html += "<tr>";
+        ndest = graph.vertices.get(cdest).get("pred");
+        html+="<td>";
+        html+=cdest;
+        html+="</td>";
+        html+="<td>";
+        html+="-->";
+        html+="</td>";
+        html+="<td>";
+        html+=ndest;
+        html+="</td>";
+        addInterval("#"+cdest,i*1000);
+        cdest = ndest;
+        i++;
+        html += "</tr>";
     }
-    document.getElementById("id" + dest).style.backgroundColor = "red";
-    document.getElementById("pred" + dest).style.backgroundColor = "red";
-    document.getElementById(dest).setAttribute("fill","red");
-    if(graph.vertices.get(dest).get("pred") != null)
-    {
-        ndest = graph.vertices.get(dest).get("pred");
-        setTimeout(function(){visualizeMove(graph, ndest)},1000);
-    }
+    while(ndest != null);
+    document.getElementById("w").innerHTML = html;
 }
 
 
