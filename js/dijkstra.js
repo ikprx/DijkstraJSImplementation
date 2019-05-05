@@ -83,94 +83,43 @@ function relax(u, v, w)
     }
     return false;
 }
-var colorNodeAnim = 0
-function colorNode(node,color)
+
+
+function colorNode(node, color, start, durr)
 {
     setTimeout(function(){
         document.getElementById(node).setAttribute("fill", color);
-    },colorNodeAnim);
-
-    colorNodeAnim += 200;
-
+    },start);
     setTimeout(function(){
         document.getElementById(node).setAttribute("fill", "white");
-    },colorNodeAnim);
-} 
-
-
-function showRoute(vertices, dest) 
-{
-    var route = []; 
-    var lastNode = vertices.get(dest); 
-
-    route.push(dest);
-    do
-    {
-        colorNodeAnim(lastNode.id, "RED");
-        lastNode = vertices.get(lastNode.pred);
-        route.push(lastNode.id);
-    }
-    while(lastNode.pred != "NONE");
-
-
-    while(route.length != 0)
-    {
-        console.log(route.pop());
-    }
+    },start+durr);
 }
 
-function createShowRoute(graph)
+function colorRecord(record, color, start, durr)
 {
-    var input = document.createElement("input");
-    input.setAttribute("type","text");
-    document.body.appendChild(input);
-
-    var button = document.createElement("button");
-    var node = document.createTextNode("Show route!");
-    button.append(node);
-    document.body.appendChild(button);
-
-
-    button.addEventListener("click", function(){
-        showRoute(graph.vertices, input.value);
-    });
+    setTimeout(function(){
+        document.getElementById(record).style.backgroundColor = color;
+    },start);
+    setTimeout(function(){
+        document.getElementById(record).style.backgroundColor = "WHITE";
+    },start+durr);
 }
 
-var lastAnim = 0;
-var timerShowRoute;
-function showNodeCheck(source, dest, graph)
+function updateRecord(vertex, start)
 {
-    clearTimeout(timerShowRoute);
-    setTimeout(function(){
-        document.getElementById(source.id).setAttribute("fill", "green");
-        document.getElementById(dest.id).setAttribute("fill", "red");
-        document.getElementById(source.id+"row").style.backgroundColor = "green"; 
-        document.getElementById(dest.id+"row").style.backgroundColor = "red"; 
-
-        document.getElementById(source.id+"dtab").innerHTML = source.d;
-        document.getElementById(source.id+"predtab").innerHTML = source.pred;
-        document.getElementById(dest.id+"dtab").innerHTML = dest.d;
-        document.getElementById(dest.id+"predtab").innerHTML = dest.pred;
-    },lastAnim);
-
-    lastAnim += 200;
 
     setTimeout(function(){
-        document.getElementById(source.id).setAttribute("fill", "white");
-        document.getElementById(dest.id).setAttribute("fill", "white");
-        document.getElementById(source.id+"row").style.backgroundColor = "white"; 
-        document.getElementById(dest.id+"row").style.backgroundColor = "white"; 
-    },lastAnim);
-    timerShowRoute = setTimeout(function(){
-        createShowRoute(graph);
-    }, lastAnim);
+        document.getElementById(vertex.id+"predtab").innerHTML = vertex.pred;
+        document.getElementById(vertex.id+"dtab").innerHTML = vertex.d;
+    },start);
 }
 
 function dijkstra(graph, source)
 {
     graph.vertices.get(source).d = 0;
     graph.vertices.get(source).pred = "NONE";
-
+    i = 0;
+    var showRoute; 
     while(graph.Q.items.length != 0)
     {
         graph.Q.heapifyDown();
@@ -182,9 +131,22 @@ function dijkstra(graph, source)
 
         for(var adjNodeId of adjNodes)
         {
+            clearTimeout(showRoute);
             var adjNode = graph.vertices.get(adjNodeId);
             relax(u, adjNode, graph.wages.get(u.id).get(adjNode.id));
-            showNodeCheck(u, adjNode, graph);
+
+            colorNode(u.id, "green",i, 1000);
+            colorRecord(u.id+"row","green",i,1000);
+            updateRecord(u,i);
+            colorNode(adjNode.id, "red",i, 1000);
+            colorRecord(adjNode.id+"row","red",i,1000);
+            updateRecord(adjNode,i);
+            i+=1000;
+
+            showRoute = setTimeout(function(){
+                document.getElementById("to").style.display = "inline";
+                document.getElementById("startRoute").style.display = "inline";
+            },i);
         }
     }
 }
@@ -236,11 +198,76 @@ function createTable(vertices)
 
         table.appendChild(row);
     }
-    document.body.appendChild(table);
+    document.getElementById("forTable").appendChild(table);
+}
+
+function createEdge(src, dest)
+{
+    var row = document.createElement("tr");
+    var srcEle = document.createElement("td");
+    srcEle.appendChild(document.createTextNode(src));
+    var arrow = document.createElement("td");
+    arrow.appendChild(document.createTextNode("---->"));
+    var destEle = document.createElement("td");
+    destEle.appendChild(document.createTextNode(dest));
+    srcEle.style.borderWidth = "0px";
+    arrow.style.borderWidth = "0px";
+    destEle.style.borderWidth = "0px";
+
+    row.appendChild(srcEle);
+    row.appendChild(arrow);
+    row.appendChild(destEle);
+    return row;
+}
+
+function addEdge(edge, start)
+{
+    setTimeout(function()
+    {
+        document.getElementById("forRoute").appendChild(edge);
+    }
+    ,start);
+}
+
+function showRoute(verticies, dest)
+{
+    document.getElementById("startRoute").disabled = true;
+    document.getElementById("forRoute").innerHTML = "";
+    var route = new Array(); 
+    var lastNode = dest;
+    var  i = 0;
+
+    var edges = new Array();
+    while(lastNode != "NONE")
+    {
+        console.log(lastNode);
+        route.push(lastNode);
+        colorNode(lastNode,"RED",i,1000);
+        colorRecord(lastNode+"idtab","RED",i,1000);
+        colorRecord(lastNode+"predtab","GREEN",i,1000);
+        i+=1000;
+        var dest = lastNode;
+        lastNode = verticies.get(lastNode).pred;
+        edges.push(createEdge(lastNode, dest));
+    }
+    var x = setTimeout(function(){document.getElementById("startRoute").disabled = false;  }, Infinity);
+
+    while(route.length != 0)
+    {
+        clearTimeout(x);
+        var currentNode = route.pop();
+        colorNode(currentNode,"GREEN",i,1000);
+        addEdge(edges.pop(),i);
+        x = setTimeout(function(){document.getElementById("startRoute").disabled = false;  }, i);
+        i+=1000;
+    }
 }
 
 window.onload = function()
 {
+    document.getElementById("to").style.display = "none";
+    document.getElementById("startRoute").style.display = "none";
+
     var graph = new Graph();
     graph.processEdge(new Edge("a","b",10));
     graph.processEdge(new Edge("a","c",6));
@@ -257,5 +284,8 @@ window.onload = function()
         createTable(graph.vertices);
         dijkstra(graph,"a");
         document.getElementById("startDijkstra").parentNode.removeChild(document.getElementById("startDijkstra"));
+    });
+    document.getElementById("startRoute").addEventListener("click",function(){
+        showRoute(graph.vertices, document.getElementById("to").value);
     });
 }
