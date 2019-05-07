@@ -1,4 +1,4 @@
-let animTime = 5000;
+let animTime = 1000;
 function Vertex(pred,d,id)
 {
     this.pred = pred;
@@ -257,10 +257,11 @@ function showRoute(verticies, dest)
         colorNode(lastNode,"RED",i,animTime);
         colorRecord(lastNode+"idtab","RED",i,animTime);
         colorRecord(lastNode+"predtab","GREEN",i,animTime);
-        i+=animTime;
         var dest = lastNode;
         lastNode = verticies.get(lastNode).pred;
+        colorNode(lastNode,"GREEN",i,animTime);
         edges.push(createEdge(lastNode, dest));
+        i+=animTime;
     }
     var x = setTimeout(function(){document.getElementById("startRoute").disabled = false;  }, Infinity);
 
