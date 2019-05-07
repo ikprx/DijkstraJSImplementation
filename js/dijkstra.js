@@ -1,3 +1,4 @@
+let animTime = 5000;
 function Vertex(pred,d,id)
 {
     this.pred = pred;
@@ -116,39 +117,50 @@ function updateRecord(vertex, start)
 
 function dijkstra(graph, source)
 {
+    //USTAWIAMY D WIERZCHOLKA ZRODLOWEGO NA 0 ABY MINHEAP ZWROCIL TO JAKO PIERWSZY REKORD  
     graph.vertices.get(source).d = 0;
     graph.vertices.get(source).pred = "NONE";
     i = 0;
     var showRoute; 
+
+    //DOPOKI KOLEJKA ZAWIERA JESZCZE WIERZCHOLKI WYKONUJ KOD
     while(graph.Q.items.length != 0)
     {
         graph.Q.heapifyDown();
         graph.Q.heapifyUp();
 
+        //ZWORC WIERZCHOLEK Z NAJMNIEJSZYM D I WYRZUC GO Z KOLEJKI
         var u = graph.Q.poll();
 
+        //ZWORC TABLICE WIERZCHOLKOW SASIADUJACYCH
+        // graph.adj.get("a") = {"b", "c"}
         var adjNodes = graph.adj.get(u.id);
 
+        //DLA KAZDEGO SASIADA ......
         for(var adjNodeId of adjNodes)
         {
             clearTimeout(showRoute);
+
+            //MAMY TYLKO ID SASIADA A NIE CALA STRUKTURE !
+            //POBIERZ CALA STRUKTURE !
             var adjNode = graph.vertices.get(adjNodeId);
+            //JEZELI KRAWEDZ MIEDZY (u,v) jest efektywniejsza niz (v.pred, v) AKTUALIZUJ!
             relax(u, adjNode, graph.wages.get(u.id).get(adjNode.id));
 
-            colorNode(u.id, "green",i, 1000);
-            colorRecord(u.id+"row","green",i,1000);
+            colorNode(u.id, "green",i, animTime);
+            colorRecord(u.id+"row","green",i,animTime);
             updateRecord(u,i);
-            colorNode(adjNode.id, "red",i, 1000);
-            colorRecord(adjNode.id+"row","red",i,1000);
+            colorNode(adjNode.id, "red",i, animTime);
+            colorRecord(adjNode.id+"row","red",i,animTime);
             updateRecord(adjNode,i);
-            i+=1000;
+            i+=animTime;
 
             showRoute = setTimeout(function(){
                 document.getElementById("to").style.display = "inline";
                 document.getElementById("startRoute").style.display = "inline";
             },i);
         }
-    }
+        }
 }
 
 function createTable(vertices)
@@ -242,10 +254,10 @@ function showRoute(verticies, dest)
     {
         console.log(lastNode);
         route.push(lastNode);
-        colorNode(lastNode,"RED",i,1000);
-        colorRecord(lastNode+"idtab","RED",i,1000);
-        colorRecord(lastNode+"predtab","GREEN",i,1000);
-        i+=1000;
+        colorNode(lastNode,"RED",i,animTime);
+        colorRecord(lastNode+"idtab","RED",i,animTime);
+        colorRecord(lastNode+"predtab","GREEN",i,animTime);
+        i+=animTime;
         var dest = lastNode;
         lastNode = verticies.get(lastNode).pred;
         edges.push(createEdge(lastNode, dest));
@@ -256,10 +268,10 @@ function showRoute(verticies, dest)
     {
         clearTimeout(x);
         var currentNode = route.pop();
-        colorNode(currentNode,"GREEN",i,1000);
+        colorNode(currentNode,"GREEN",i,animTime);
         addEdge(edges.pop(),i);
         x = setTimeout(function(){document.getElementById("startRoute").disabled = false;  }, i);
-        i+=1000;
+        i+=animTime;
     }
 }
 
@@ -286,6 +298,13 @@ window.onload = function()
         document.getElementById("startDijkstra").parentNode.removeChild(document.getElementById("startDijkstra"));
     });
     document.getElementById("startRoute").addEventListener("click",function(){
-        showRoute(graph.vertices, document.getElementById("to").value);
+        var vert = document.getElementById("to").value;
+        for(var key of graph.vertices.keys())
+        {
+            if(key == vert)
+            {
+                showRoute(graph.vertices, vert);
+            }
+        }
     });
 }
